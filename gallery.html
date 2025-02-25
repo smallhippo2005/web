@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>瀑布流照片墙</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
+    #photo-wall {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      margin: 20px;
+    }
+    .photo {
+      width: 300px;
+      margin: 10px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .photo img {
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="photo-wall"></div>
+
+  <script>
+    // 获取图片数据并生成URL
+    async function loadImages() {
+      const apiUrl = 'http://bzytools.xyz:9000/photos?list-type=2';
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.text();
+        
+        // 解析XML数据
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(data, 'application/xml');
+        const contents = xmlDoc.getElementsByTagName('Contents');
+        
+        const imageUrls = [];
+        for (let i = 0; i < contents.length; i++) {
+          const key = contents[i].getElementsByTagName('Key')[0].textContent;
+          const imageUrl = `http://bzytools.xyz:9000/photos/${key}`;
+          imageUrls.push(imageUrl);
+        }
+
+        // 渲染图片到页面
+        const photoWall = document.getElementById('photo-wall');
+        imageUrls.forEach(url => {
+          const photoDiv = document.createElement('div');
+          photoDiv.classList.add('photo');
+          const img = document.createElement('img');
+          img.src = url;
+          photoDiv.appendChild(img);
+          photoWall.appendChild(photoDiv);
+        });
+
+      } catch (error) {
+        console.error('无法加载图片数据:', error);
+      }
+    }
+
+    // 页面加载后执行
+    loadImages();
+  </script>
+</body>
+</html>
